@@ -5,24 +5,20 @@ using System.Collections.Generic;
 public class MagneticBallsController : MonoBehaviour 
 {
 	public Color[] typeColors;
-
 	public float G = 9.8f;
-	public GameObject[] balls;
+	public GameObject spawnBall;
+	public Transform startPosition;
+	public float timeToSpawnBalls = 1.0f;
+	public float spawnPower = 10.0f;
 
-	public List<Transform> draggedBall = new List<Transform>();
+	private GameObject newBall;
+
+	public List<GameObject> balls;
+	private List<Transform> draggedBall = new List<Transform>();
 
 	void Start()
 	{
-		//ONLY FOR TESTING!!! This sucks
-		balls = GameObject.FindGameObjectsWithTag("Ball");
-		foreach (GameObject ball in balls)
-		{
-			ball.renderer.material.color = typeColors[Random.Range(0, typeColors.Length)];
-		}
-
-		Debug.Log("Start");
-		//Slow down
-		//Time.timeScale = 0.1f;
+		StartGame();
 	}
 
 	void FixedUpdate()
@@ -72,13 +68,51 @@ public class MagneticBallsController : MonoBehaviour
 #endif
 	}
 
+
+	void StartGame()
+	{
+		balls = new List<GameObject>();
+		draggedBall = new List<Transform>();
+		
+		//ONLY FOR TESTING!!! This sucks
+		GameObject[] startBalls = GameObject.FindGameObjectsWithTag("Ball");
+		
+		foreach (GameObject ball in startBalls)
+		{
+			balls.Add(ball);
+			ball.renderer.material.color = typeColors[Random.Range(0, typeColors.Length)];
+		}
+
+		StartCoroutine("SpawnBalls");
+	}
+
+	//NOT RIGHT!
+	IEnumerator SpawnBalls()
+	{
+		do
+		{
+			yield return new WaitForSeconds(timeToSpawnBalls);
+
+			if (newBall == null)
+			{
+				newBall = (GameObject)Instantiate(spawnBall);
+				newBall.transform.parent = this.transform;
+				newBall.transform.position = startPosition.position;
+				newBall.renderer.material.color = typeColors[Random.Range(0, typeColors.Length)];
+				newBall.rigidbody2D.isKinematic = true;
+			}
+
+		} while (true);
+	}
+
+
 	//Magnet balls to each other
 	//F = G * m1 * m2 / r^2
 	void MagneticForce()
 	{
-		for (int i = 0; i < balls.Length; i++)
+		for (int i = 0; i < balls.Count; i++)
 		{
-			for (int j = 0; j < balls.Length; j++)
+			for (int j = 0; j < balls.Count; j++)
 			{
 				if (i != j /*&& !draggedBall.Contains(balls[j].transform)*/)
 				{
@@ -95,16 +129,21 @@ public class MagneticBallsController : MonoBehaviour
 
 	void SelectBall(int number = 0)
 	{
-		RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(GetTouchPosition(number)), Vector2.zero, 20.0f, 1 << 8);
+		RaycastHit2D hit = Physics2D.Raycast(GetTouchPosition(number), Vector2.zero, 20.0f, 1 << 8);
 		
-		if(hit.collider != null)
+		if(hit.collider != null/* && hit.transform != newBall.transform*/) //Drag old ball just for fun
 		{
 			draggedBall.Add(hit.transform);
 			draggedBall[number].rigidbody2D.velocity = Vector2.zero;
-			//draggedBall = hit.transform;
-			//draggedBall.rigidbody2D.velocity = Vector2.zero;
 		}
-
+		/*else if (newBall != null) //spawn new ball
+		{
+			Vector2 force = (GetTouchPosition(number) - newBall.transform.position).normalized * spawnPower;
+			newBall.rigidbody2D.isKinematic = false;
+			newBall.rigidbody2D.AddForce(force);
+			balls.Add(newBall);
+			newBall = null;
+		}*/
 	}
 
 	//Drag ball by finger
@@ -112,15 +151,9 @@ public class MagneticBallsController : MonoBehaviour
 	{
 		if (draggedBall.Count > number)
 		{
-			draggedBall[number].position = (Vector2)Camera.main.ScreenToWorldPoint(GetTouchPosition(number));
+			draggedBall[number].position = (Vector2)GetTouchPosition(number);
 			draggedBall[number].rigidbody2D.velocity = Vector2.zero;
 		}
-
-//		if (draggedBall != null)
-//		{
-//			draggedBall.position = (Vector2)Camera.main.ScreenToWorldPoint(GetTouchPosition(number));
-//			draggedBall.rigidbody2D.velocity = Vector2.zero;
-//		}
 	}
 
 	void ReleaseBall(int number = 0)
@@ -130,21 +163,23 @@ public class MagneticBallsController : MonoBehaviour
 			draggedBall[number].rigidbody2D.velocity = Vector2.zero;
 			draggedBall.RemoveAt(number);
 		}
-
-//		if (draggedBall != null)
-//		{
-//			draggedBall.rigidbody2D.velocity = Vector2.zero;
-//			draggedBall = null;
-//		}
+		else if (newBall != null) //spawn new ball
+		{
+			Vector2 force = (GetTouchPosition(number) - newBall.transform.position).normalized * spawnPower;
+			newBall.rigidbody2D.isKinematic = false;
+			newBall.rigidbody2D.AddForce(force);
+			balls.Add(newBall);
+			newBall = null;
+		}
 	}
 
 
 	Vector3 GetTouchPosition(int number)
 	{
 #if !UNITY_EDITOR
-		return Input.GetTouch(number).position;
+		return Camera.main.ScreenToWorldPoint(Input.GetTouch(number).position);
 #else
-		return Input.mousePosition;
+		return Camera.main.ScreenToWorldPoint(Input.mousePosition);
 #endif
 	}
 
