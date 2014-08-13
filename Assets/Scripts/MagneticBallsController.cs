@@ -10,10 +10,11 @@ public class MagneticBallsController : MonoBehaviour
 	public Transform startPosition;
 	public float timeToSpawnBalls = 1.0f;
 	public float spawnPower = 10.0f;
+	public float magneticDistance = 1.0f;
 
 	private GameObject newBall;
 
-	public List<GameObject> balls;
+	private List<GameObject> balls;
 	private List<Transform> draggedBall = new List<Transform>();
 
 	void Start()
@@ -114,7 +115,7 @@ public class MagneticBallsController : MonoBehaviour
 		{
 			for (int j = 0; j < balls.Count; j++)
 			{
-				if (i != j /*&& !draggedBall.Contains(balls[j].transform)*/)
+				if (i != j && Vector2.Distance(balls[i].transform.localPosition, balls[j].transform.localPosition) < magneticDistance/*&& !draggedBall.Contains(balls[j].transform)*/)
 				{
 					Vector2 force = (balls[i].transform.localPosition - balls[j].transform.localPosition).normalized;
 					//force = force.normalized;
