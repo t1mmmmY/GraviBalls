@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class MagneticBallsController : MonoBehaviour 
 {
-	public Color[] typeColors;
+	public Material[] ballMaterials;
 	public float G = 9.8f;
 	public GameObject spawnBall;
 	public Transform startPosition;
@@ -80,7 +80,7 @@ public class MagneticBallsController : MonoBehaviour
 		foreach (GameObject ball in startBalls)
 		{
 			balls.Add(ball);
-			ball.renderer.material.color = typeColors[Random.Range(0, typeColors.Length)];
+			ball.renderer.material = ballMaterials[Random.Range(0, ballMaterials.Length)];
 		}
 
 		StartCoroutine("SpawnBalls");
@@ -98,7 +98,7 @@ public class MagneticBallsController : MonoBehaviour
 				newBall = (GameObject)Instantiate(spawnBall);
 				newBall.transform.parent = this.transform;
 				newBall.transform.position = startPosition.position;
-				newBall.renderer.material.color = typeColors[Random.Range(0, typeColors.Length)];
+				newBall.renderer.material = ballMaterials[Random.Range(0, ballMaterials.Length)];
 				newBall.rigidbody2D.isKinematic = true;
 			}
 

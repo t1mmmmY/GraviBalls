@@ -13,7 +13,7 @@ Properties {
 	_Shininess ("Shininess", Range (0.03, 1)) = 0.078125
 	_MainTex ("Base (RGB) Gloss (A)", 2D) = "white" {}
 	_SuperShine ("Shine", Range(0.5, 2.0)) = 1.0
-	_BumpMap ("Normalmap", 2D) = "bump" {}
+	//_BumpMap ("Normalmap", 2D) = "bump" {}
 }
 SubShader { 
 	Tags { "RenderType"="Opaque" }
@@ -36,7 +36,7 @@ inline fixed4 LightingMobileBlinnPhong (SurfaceOutput s, fixed3 lightDir, fixed3
 
 sampler2D _MainTex;
 fixed4 _Color;
-sampler2D _BumpMap;
+//sampler2D _BumpMap;
 half _Shininess;
 float _SuperShine;
 
@@ -50,7 +50,7 @@ void surf (Input IN, inout SurfaceOutput o) {
 	o.Gloss = tex.a;
 	o.Alpha = tex.a;
 	o.Specular = _Shininess;
-	o.Normal = UnpackNormal (tex2D(_BumpMap, IN.uv_MainTex));
+	//o.Normal = UnpackNormal (tex2D(_BumpMap, IN.uv_MainTex));
 }
 ENDCG
 }
