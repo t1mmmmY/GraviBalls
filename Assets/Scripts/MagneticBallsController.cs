@@ -12,6 +12,8 @@ public class MagneticBallsController : MonoBehaviour
 	public float spawnPower = 10.0f;
 	public float magneticDistance = 1.0f;
 
+	public float updateTime = 0.1f;
+
 	private GameObject newBall;
 
 	private List<GameObject> balls;
@@ -20,11 +22,22 @@ public class MagneticBallsController : MonoBehaviour
 	void Start()
 	{
 		StartGame();
+		//StartCoroutine("Magnetic");
 	}
 
 	void FixedUpdate()
 	{
 		MagneticForce();
+	}
+
+	IEnumerator Magnetic()
+	{
+		do
+		{
+			MagneticForce();
+
+			yield return new WaitForSeconds(updateTime);
+		} while (true);
 	}
 
 	void Update()
@@ -166,14 +179,29 @@ public class MagneticBallsController : MonoBehaviour
 		}
 		else if (newBall != null) //spawn new ball
 		{
-			Vector2 force = (GetTouchPosition(number) - newBall.transform.position).normalized * spawnPower;
-			newBall.rigidbody2D.isKinematic = false;
-			newBall.rigidbody2D.AddForce(force);
-			balls.Add(newBall);
-			newBall = null;
+			SpawnBall(number);
 		}
 	}
 
+	void SpawnBall(int number = 0)
+	{
+		Vector2 force = (GetTouchPosition(number) - newBall.transform.position).normalized * spawnPower;
+		newBall.rigidbody2D.isKinematic = false;
+		newBall.rigidbody2D.AddForce(force);
+		newBall.rigidbody2D.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+
+
+		balls.Add(newBall);
+		StartCoroutine("EasyCollision", balls[balls.Count-1]);
+
+		newBall = null;
+	}
+
+	IEnumerator EasyCollision(GameObject newBall)
+	{
+		yield return new WaitForSeconds(0.5f);
+		newBall.rigidbody2D.collisionDetectionMode = CollisionDetectionMode2D.None;
+	}
 
 	Vector3 GetTouchPosition(int number)
 	{
