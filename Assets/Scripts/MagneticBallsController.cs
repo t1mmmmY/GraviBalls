@@ -12,7 +12,6 @@ public class MagneticBallsController : MonoBehaviour
 	public float spawnPower = 10.0f;
 	public float magneticDistance = 1.0f;
 
-	public float updateTime = 0.1f;
 
 	private GameObject newBall;
 
@@ -22,22 +21,11 @@ public class MagneticBallsController : MonoBehaviour
 	void Start()
 	{
 		StartGame();
-		//StartCoroutine("Magnetic");
 	}
 
 	void FixedUpdate()
 	{
 		MagneticForce();
-	}
-
-	IEnumerator Magnetic()
-	{
-		do
-		{
-			MagneticForce();
-
-			yield return new WaitForSeconds(updateTime);
-		} while (true);
 	}
 
 	void Update()
@@ -94,7 +82,14 @@ public class MagneticBallsController : MonoBehaviour
 		foreach (GameObject ball in startBalls)
 		{
 			balls.Add(ball);
-			ball.renderer.material = ballMaterials[Random.Range(0, ballMaterials.Length)];
+			if (ball.renderer != null)
+			{
+				ball.renderer.material = ballMaterials[Random.Range(0, ballMaterials.Length)];
+			}
+			else
+			{
+				ball.GetComponentInChildren<Renderer>().material = ballMaterials[Random.Range(0, ballMaterials.Length)];
+			}
 		}
 
 		StartCoroutine("SpawnBalls");
@@ -112,7 +107,14 @@ public class MagneticBallsController : MonoBehaviour
 				newBall = (GameObject)Instantiate(spawnBall);
 				newBall.transform.parent = this.transform;
 				newBall.transform.position = startPosition.position;
-				newBall.renderer.material = ballMaterials[Random.Range(0, ballMaterials.Length)];
+				if (newBall.renderer != null)
+				{
+					newBall.renderer.material = ballMaterials[Random.Range(0, ballMaterials.Length)];
+				}
+				else
+				{
+					newBall.GetComponentInChildren<Renderer>().material = ballMaterials[Random.Range(0, ballMaterials.Length)];
+				}
 				newBall.rigidbody2D.isKinematic = true;
 			}
 
